@@ -308,11 +308,11 @@ func daemonFunc(req cmds.Request, re cmds.ResponseEmitter) {
 	if routingOption == routingOptionDefaultKwd {
 		cfg, err := repo.Config()
 		if err != nil {
-			res.SetError(err, cmds.ErrNormal)
+			re.SetError(err, cmdkit.ErrNormal)
 			return
 		}
 
-		routingOption = cfg.Discovery.Routing
+		routingOption = cfg.Routing.Type
 		if routingOption == "" {
 			routingOption = routingOptionDHTKwd
 		}
