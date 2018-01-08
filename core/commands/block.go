@@ -9,12 +9,14 @@ import (
 
 	util "github.com/ipfs/go-ipfs/blocks/blockstore/util"
 	e "github.com/ipfs/go-ipfs/core/commands/e"
-	"gx/ipfs/QmP9vZfc5WSjfGTXmwX2EcicMFzmZ6fXn7HTdKYat6ccmH/go-ipfs-cmds"
-	"gx/ipfs/QmQp2a2Hhb7F6eK2A5hN8f9aJy4mtkEikL9Zj4cgB7d1dD/go-ipfs-cmdkit"
 
+	cmds "gx/ipfs/QmP9vZfc5WSjfGTXmwX2EcicMFzmZ6fXn7HTdKYat6ccmH/go-ipfs-cmds"
+	cmdkit "gx/ipfs/QmQp2a2Hhb7F6eK2A5hN8f9aJy4mtkEikL9Zj4cgB7d1dD/go-ipfs-cmdkit"
 	mh "gx/ipfs/QmYeKnKpubCMRiq3PGZcTREErthbb5Q9cXsCoSkD9bjEBd/go-multihash"
 	blocks "gx/ipfs/QmYsEQydGrsxNZfAiskvQ76N2xE9hDQtSAkRSynwMiUK3c/go-block-format"
 	cid "gx/ipfs/QmeSrf6pzut73u6zLQkRFQ3ygt3k6XFT2kjdYP8Tnkwwyg/go-cid"
+
+	"github.com/pkg/errors"
 )
 
 type BlockStat struct {
@@ -156,20 +158,6 @@ It reads from stdin, and <key> is a base58 encoded multihash.
 			return
 		}
 
-		var pref cid.Prefix
-		pref.Version = 1
-
-		format, _, _ := req.Option("format").String()
-		formatval, ok := cid.Codecs[format]
-		if !ok {
-			res.SetError(fmt.Errorf("unrecognized format: %s", format), cmdkit.ErrNormal)
-			return
-		}
-		if format == "v0" {
-			pref.Version = 0
-		}
-		pref.Codec = formatval
-
 		mhtype, _, _ := req.Option("mhtype").String()
 		mhtval, ok := mh.Names[mhtype]
 		if !ok {
@@ -177,6 +165,25 @@ It reads from stdin, and <key> is a base58 encoded multihash.
 			res.SetError(err, cmdkit.ErrNormal)
 			return
 		}
+
+		var pref cid.Prefix
+		pref.Version = 1
+
+		format, userFormat, _ := req.Option("format").String()
+		formatval, ok := cid.Codecs[format]
+		if !ok {
+			res.SetError(fmt.Errorf("unrecognized format: %s", format), cmdkit.ErrNormal)
+			return
+		}
+		if format == "v0" && (mhtval == mh.SHA2_256 || userFormat) {
+			pref.Version = 0
+		}
+		if mhtval != mh.SHA2_256 && pref.Version == 0 {
+			res.SetError(errors.New("cannot generate CIDv0 with non-sha256 hash function"), cmdkit.ErrNormal)
+			return
+		}
+
+		pref.Codec = formatval
 		pref.MhType = mhtval
 
 		mhlen, _, err := req.Option("mhlen").Int()
