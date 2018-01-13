@@ -10,15 +10,16 @@ import (
 
 	repo "github.com/ipfs/go-ipfs/repo"
 
-	measure "gx/ipfs/QmU7tt6mHJ5Wocjy2omBxpDfN8g9pkRimzJae7EXdrs96k/go-ds-measure"
+	measure "gx/ipfs/QmRhjB5Mnha4k6VH6qRFNabAVkxpbqC7bVw2daMKLHPXXN/go-ds-measure"
 	flatfs "gx/ipfs/Qmak5iFUErGmKhYUC5StZtCGFp5bdhvye8PdKgTMk9B9Fw/go-ds-flatfs"
 
 	ds "gx/ipfs/QmdHG8MAuARdGHxx4rPQASLcvhz24fzjSQq7AJRAQEorq5/go-datastore"
 	mount "gx/ipfs/QmdHG8MAuARdGHxx4rPQASLcvhz24fzjSQq7AJRAQEorq5/go-datastore/syncmount"
 
+	humanize "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	levelds "gx/ipfs/QmYnCBXxoyoS38vtNQjjpRwZTiUnpuuKpapxMNaDfyQRLf/go-ds-leveldb"
+	badgerds "gx/ipfs/Qmb1MciZErHUnT1MsyAwUL8FGtZqmRPAXjxU6SktqFUs23/go-ds-badger"
 	ldbopts "gx/ipfs/QmbBhyDKsY4mbY6xsKt3qu9Y7FPvMJ6qbD8AMjYYvPRw1g/goleveldb/leveldb/opt"
-	badgerds "gx/ipfs/Qmdin8YL17fL1BC5ej6o9b8es6MBoiQjKVdyxEwJh3HVmf/go-ds-badger"
 )
 
 // ConfigFromMap creates a new datastore config from a map
@@ -342,6 +343,8 @@ func (c measureDatastoreConfig) Create(path string) (repo.Datastore, error) {
 type badgerdsDatastoreConfig struct {
 	path       string
 	syncWrites bool
+
+	vlogFileSize int64
 }
 
 // BadgerdsDatastoreConfig returns a configuration stub for a badger datastore
@@ -363,6 +366,22 @@ func BadgerdsDatastoreConfig(params map[string]interface{}) (DatastoreConfig, er
 			c.syncWrites = swb
 		} else {
 			return nil, fmt.Errorf("'syncWrites' field was not a boolean")
+		}
+	}
+
+	vls, ok := params["vlogFileSize"]
+	if !ok {
+		// default to 1GiB
+		c.vlogFileSize = badgerds.DefaultOptions.ValueLogFileSize
+	} else {
+		if vlogSize, ok := vls.(string); ok {
+			s, err := humanize.ParseBytes(vlogSize)
+			if err != nil {
+				return nil, err
+			}
+			c.vlogFileSize = int64(s)
+		} else {
+			return nil, fmt.Errorf("'vlogFileSize' field was not a string")
 		}
 	}
 
@@ -389,6 +408,7 @@ func (c *badgerdsDatastoreConfig) Create(path string) (repo.Datastore, error) {
 
 	defopts := badgerds.DefaultOptions
 	defopts.SyncWrites = c.syncWrites
+	defopts.ValueLogFileSize = c.vlogFileSize
 
 	return badgerds.NewDatastore(p, &defopts)
 }

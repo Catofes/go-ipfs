@@ -208,9 +208,9 @@
     },
     {
       "author": "whyrusleeping",
-      "hash": "QmU7tt6mHJ5Wocjy2omBxpDfN8g9pkRimzJae7EXdrs96k",
+      "hash": "QmRhjB5Mnha4k6VH6qRFNabAVkxpbqC7bVw2daMKLHPXXN",
       "name": "go-ds-measure",
-      "version": "1.2.3"
+      "version": "1.3.0"
     },
     {
       "author": "whyrusleeping",
@@ -470,9 +470,9 @@
     },
     {
       "author": "magik6k",
-      "hash": "Qmdin8YL17fL1BC5ej6o9b8es6MBoiQjKVdyxEwJh3HVmf",
+      "hash": "Qmb1MciZErHUnT1MsyAwUL8FGtZqmRPAXjxU6SktqFUs23",
       "name": "go-ds-badger",
-      "version": "1.3.0"
+      "version": "1.4.1"
     },
     {
       "author": "whyrusleeping",

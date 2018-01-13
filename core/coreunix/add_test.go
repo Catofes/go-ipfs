@@ -19,9 +19,9 @@ import (
 	"github.com/ipfs/go-ipfs/repo/config"
 	ds2 "github.com/ipfs/go-ipfs/thirdparty/datastore2"
 	pi "github.com/ipfs/go-ipfs/thirdparty/posinfo"
-	"gx/ipfs/QmYsEQydGrsxNZfAiskvQ76N2xE9hDQtSAkRSynwMiUK3c/go-block-format"
 
 	"gx/ipfs/QmQp2a2Hhb7F6eK2A5hN8f9aJy4mtkEikL9Zj4cgB7d1dD/go-ipfs-cmdkit/files"
+	"gx/ipfs/QmYsEQydGrsxNZfAiskvQ76N2xE9hDQtSAkRSynwMiUK3c/go-block-format"
 	cid "gx/ipfs/QmeSrf6pzut73u6zLQkRFQ3ygt3k6XFT2kjdYP8Tnkwwyg/go-cid"
 )
 
@@ -102,7 +102,7 @@ func TestAddGCLive(t *testing.T) {
 	gcstarted := make(chan struct{})
 	go func() {
 		defer close(gcstarted)
-		gcout = gc.GC(context.Background(), node.Blockstore, node.DAG, node.Pinning, nil)
+		gcout = gc.GC(context.Background(), node.Blockstore, node.Repo.Datastore(), node.DAG, node.Pinning, nil)
 	}()
 
 	// gc shouldnt start until we let the add finish its current file.
